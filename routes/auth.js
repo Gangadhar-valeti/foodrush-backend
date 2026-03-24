@@ -1,23 +1,14 @@
-const { decodeToken } = require('../utils/jwt');
+const express = require('express');
+const app = express();
 
-module.exports = function authMiddleware(req, res, next) {
-  const header = req.headers.authorization;
+app.use(express.json());
 
-  // ✅ If no token → just continue (for public routes)
-  if (!header || !header.startsWith('Bearer ')) {
-    req.user = null;
-    return next();
-  }
+// ✅ PUBLIC ROUTES (NO AUTH)
+app.use('/api/auth', require('./routes/auth'));
 
-  try {
-    const token = header.split(' ')[1];
-    const decoded = decodeToken(token);
+// ✅ PROTECTED ROUTES (AUTH INSIDE THEM)
+app.use('/api/cart', require('./routes/cart'));
+app.use('/api/orders', require('./routes/orders'));
+app.use('/api/user', require('./routes/user'));
 
-    req.user = { id: decoded.userId };
-    next();
-  } catch (err) {
-    return res.status(401).json({
-      error: 'Invalid or expired token. Please log in again.'
-    });
-  }
-};
+module.exports = app;

@@ -1,20 +1,14 @@
-// ═══════════════════════════════════════════════════
-//  middleware/auth.js — JWT auth guard
-// ═══════════════════════════════════════════════════
-const { decodeToken } = require('../utils/jwt');
+const express = require('express');
+const app = express();
 
-module.exports = function authMiddleware(req, res, next) {
-  const header = req.headers.authorization;
-  if (!header || !header.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'No token provided. Please log in.' });
-  }
+app.use(express.json());
 
-  try {
-    const token   = header.split(' ')[1];
-    const decoded = decodeToken(token);
-    req.user      = { id: decoded.userId };
-    next();
-  } catch (err) {
-    return res.status(401).json({ error: 'Invalid or expired token. Please log in again.' });
-  }
-};
+// ✅ PUBLIC ROUTES (NO AUTH)
+app.use('/api/auth', require('./routes/auth'));
+
+// ✅ PROTECTED ROUTES (AUTH INSIDE THEM)
+app.use('/api/cart', require('./routes/cart'));
+app.use('/api/orders', require('./routes/orders'));
+app.use('/api/user', require('./routes/user'));
+
+module.exports = app;
